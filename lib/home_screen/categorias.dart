@@ -91,7 +91,7 @@ class _CategoriasState extends State<Categorias> {
           controller: _descripcion,
           obscureText: false,
           validator: (value) =>
-              value!.isEmpty ? "Ingrese la descripción" : null,
+          value!.isEmpty ? "Ingrese la descripción" : null,
           keyboardType: TextInputType.text,
         ),
         const SizedBox(height: 10),

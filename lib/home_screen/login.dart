@@ -1,123 +1,148 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_application_2/Componentes/inputL.dart';
 import 'package:flutter_application_2/home_screen/lista.dart';
+import 'package:flutter_application_2/models/usuarios.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class Login extends StatefulWidget {
-  const Login({Key? key}) : super(key: key);
+class LoginViewComponent extends StatefulWidget {
+  const LoginViewComponent({Key? key}) : super(key: key);
 
   @override
-  State<Login> createState() => _LoginState();
+  State<LoginViewComponent> createState() => _LoginViewComponentState();
 }
 
-class _LoginState extends State<Login> {
-  final _formKey = GlobalKey<FormState>();
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
+class _LoginViewComponentState extends State<LoginViewComponent> {
+  bool _isLoading = false;
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final _formKey =
+      GlobalKey<FormState>(); // Agregar una clave global para el formulario
+
+  // Correo y contraseña para ingresar
+  final String _validEmail = 'correo@ejemplo.com';
+  final String _validPassword = '123';
+
+  @override
+  void initState() {
+    super.initState();
+    _getUsuarios();
+  }
+
+  DataModelUsuario? _dataModelUsuario;
+
+  _getUsuarios() async {
+    _isLoading = true;
+    try {
+      String url = 'https://coff-v-art-api.onrender.com/api/user';
+      http.Response res = await http.get(Uri.parse(url));
+      if (res.statusCode == 200) {
+        _dataModelUsuario = DataModelUsuario.fromJson(json.decode(res.body));
+        _isLoading = false;
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Login"),
-        backgroundColor: Colors.red, // Color corporativo
+        title: const Text('Login'),
+        centerTitle: true,
+        backgroundColor: Colors.red[900],
       ),
-      body: Form(
-        key: _formKey,
-        child: Stack(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 211, 207, 207),
+      body: Container(
+        color: Color.fromARGB(192, 255, 253, 224),
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey, // Asociar el formulario con la clave global
+          child: Column(
+            children: [
+              Image.asset('../asset/burdeo_logo.png'),
+              const SizedBox(height: 16.0),
+              InputComponent(
+                label: 'Correo Electrónico',
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return 'Por favor ingrese su correo electrónico';
+                  } else if (!value.contains('@')) {
+                    return 'Por favor ingrese un correo electrónico válido';
+                  }
+                  return null;
+                },
               ),
-            ),
-            Center(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Image.asset(
-                        '../asset/burdeo_logo.png',
-                        height: 120,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: TextFormField(
-                        controller: emailController,
-                        style: const TextStyle(
-                            color: Colors.black), // Color de texto corporativo
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: const Color.fromARGB(255, 247, 238, 238),
-                          border: OutlineInputBorder(),
-                          labelText: "Email",
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your email';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: TextFormField(
-                        controller: passwordController,
-                        style: const TextStyle(
-                            color: Colors.black), // Color de texto corporativo
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: const Color.fromARGB(255, 231, 223, 223),
-                          border: OutlineInputBorder(),
-                          labelText: "Password",
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your password';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            final route = MaterialPageRoute(
-                                builder: (context) => const MyList());
-                            Navigator.push(context, route);
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Please fill input'),
-                              ),
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          primary: Colors
-                              .red, // Color de fondo del botón corporativo
-                        ),
-                        child: const Text(
-                          'Submit',
-                          style: TextStyle(
-                            color: Colors.white, // Color de texto del botón
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+              const SizedBox(height: 16.0),
+              InputComponent(
+                label: 'Contraseña',
+                controller: _passwordController,
+                obscureText: true,
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return 'Por favor ingrese su contraseña';
+                  }
+                  return null;
+                },
               ),
-            ),
-          ],
+              const SizedBox(height: 16.0),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    // validamos credenciales
+                    final enteredEmail = _emailController.text.trim();
+                    final enteredPassword = _passwordController.text.trim();
+                    int positionUsuario = -1;
+
+                    // Search the email and password in the list
+                    for (int i = 0;
+                        i < _dataModelUsuario!.usuarios.length;
+                        i++) {
+                      if (_dataModelUsuario!.usuarios[i].email ==
+                              enteredEmail &&
+                          _dataModelUsuario!.usuarios[i].password ==
+                              enteredPassword) {
+                        positionUsuario = i;
+                        break;
+                      }
+                    }
+
+                    // If the email and password is correct
+                    if (positionUsuario != -1) {
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                        builder: (context) => const MyList(),
+                      ));
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Correo o contraseña errados')),
+                      );
+                    }
+
+                    // if (enteredEmail == _validEmail &&
+                    //     enteredPassword == _validPassword) {
+                    //   Text('Hola');
+                    //   // Navigator.of(context).pushReplacement(MaterialPageRoute
+                    //   // (builder: (context) => const WelcomeView(),
+                    //   // ),
+                    //   // );
+                    // } else {
+                    //   ScaffoldMessenger.of(context).showSnackBar(
+                    //     const SnackBar(
+                    //         content: Text('Correo o contraseña errados')),
+                    //   );
+                    // }
+                  }
+                },
+                child: const Text('Ingresar'),
+              ),
+            ],
+          ),
         ),
       ),
-      backgroundColor: const Color.fromARGB(255, 255, 250, 250),
     );
   }
 }
