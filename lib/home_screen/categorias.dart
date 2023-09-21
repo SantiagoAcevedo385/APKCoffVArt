@@ -84,6 +84,10 @@ class _CategoriasState extends State<Categorias> {
           obscureText: false,
           validator: (value) => value!.isEmpty ? "Ingrese el nombre" : null,
           keyboardType: TextInputType.text,
+          style: const TextStyle(
+          color: Colors.black,
+          fontSize: 16,
+  ),
         ),
         const SizedBox(height: 10),
         InputCampo(
@@ -93,6 +97,10 @@ class _CategoriasState extends State<Categorias> {
           validator: (value) =>
           value!.isEmpty ? "Ingrese la descripción" : null,
           keyboardType: TextInputType.text,
+          style: const TextStyle(
+          color: Colors.black,
+          fontSize: 16,
+  ),
         ),
         const SizedBox(height: 10),
         ElevatedButton(

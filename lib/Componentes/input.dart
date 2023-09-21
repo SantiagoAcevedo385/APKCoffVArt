@@ -8,12 +8,14 @@ class InputCampo extends StatelessWidget {
     this.obscureText = false,
     this.keyboardType = TextInputType.text,
     this.validator,
+    this.style, // Acepta un estilo de texto opcional
   }) : super(key: key);
 
   final String label;
   final TextEditingController controller;
   final bool obscureText;
   final TextInputType keyboardType;
+  final TextStyle? style; 
   final String? Function(String?)? validator;
 
   @override
